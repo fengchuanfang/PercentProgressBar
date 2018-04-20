@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">PercentProgressBar</string>
+    <string name="main_text">点击模拟下载</string>
+</resources>
