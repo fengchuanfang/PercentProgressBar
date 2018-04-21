@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
@@ -32,11 +31,13 @@ public class PercentProgressBar1 extends View {
     private RectF
             progressRectF;//进度条圆弧所在的矩形
 
-    private float progressPaintWidth; //进度条画笔的宽度
+    private float
+            progressPaintWidth, //进度条画笔的宽度
+            radiusArc,//圆形进度条半径
+            textHeight;//“100%”文字的高度
 
     private int percentProgress;//百分比进度（0 ~ 100）
     private boolean isMeasured = false;
-
 
     public PercentProgressBar1(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
@@ -82,34 +83,29 @@ public class PercentProgressBar1 extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         if (!isMeasured) {
-            getWidthAndHeight();
+            int width = getMeasuredWidth();// 获取控件的layout_width
+            int height = getMeasuredHeight(); // 获取控件的layout_height
+            //获取内切圆圆心坐标
+            int centerX = width / 2;
+            int centerY = height / 2;
+            int radius = Math.min(width, height) / 2;//获取控件内切圆的半径
+
+            float textWidth = percentTextPaint.measureText("100%");
+            //比较进度条的宽度和百分比文字的高度，去两者中较大者，用以计算进度条的半径，保证精度条和百分比文字互为中心
+            radiusArc = radius - (progressPaintWidth > textWidth ? progressPaintWidth / 2 : textWidth / 2);
+            Rect rect = new Rect();
+            percentTextPaint.getTextBounds("100%", 0, "100%".length(), rect);//获取最大百分比文字的高度
+            textHeight = rect.height();
+            //初始化进度条圆弧所在的矩形
+            progressRectF = new RectF();
+            progressRectF.left = centerX - radiusArc;
+            progressRectF.top = centerY - radiusArc;
+            progressRectF.right = centerX + radiusArc;
+            progressRectF.bottom = centerY + radiusArc;
             isMeasured = true;
         }
     }
-    float radiusArc;
-    int textHeight;
-    /** 得到视图等的高度宽度尺寸数据 */
-    private void getWidthAndHeight() {
-        int width = getMeasuredWidth();// 获取控件的layout_width
-        int height = getMeasuredHeight(); // 获取控件的layout_height
-        //获取内切圆圆心坐标
-        int centerX = width / 2;
-        int centerY = height / 2;
-        int radius = Math.min(width, height) / 2;//获取控件内切圆的半径
 
-        Rect rect = new Rect();
-        percentTextPaint.getTextBounds("100%", 0, "100%".length(), rect);//获取最大百分比文字的高度
-        textHeight = rect.height();
-        //比较进度条的宽度和百分比文字的高度，去两者中较大者，用以计算进度条的半径，保证精度条和百分比文字互为中心
-        radiusArc = radius - (progressPaintWidth > textHeight ? progressPaintWidth / 2 : textHeight / 2);
-
-        //初始化进度条圆弧所在的矩形
-        progressRectF = new RectF();
-        progressRectF.left = centerX - radiusArc;
-        progressRectF.top = centerY - radiusArc;
-        progressRectF.right = centerX + radiusArc;
-        progressRectF.bottom = centerY + radiusArc;
-    }
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -117,12 +113,19 @@ public class PercentProgressBar1 extends View {
         //绘制进度框的背景
         canvas.drawArc(progressRectF, 0, 360, false, progressBackPaint);
         //绘制进度框的前景（从圆形最高点中间，顺时针绘制）
+        progressFrontPaint.setStyle(Paint.Style.STROKE);
         canvas.drawArc(progressRectF, -90, percentProgress / 100.0f * 360, false, progressFrontPaint);
         //百分比文字
         String text = percentProgress + "%";
-        double cos = Math.cos(Math.toRadians(percentProgress / 100.0f * 360))*radiusArc;
-        double sin = Math.sin(Math.toRadians(percentProgress / 100.0f * 360))*radiusArc;
-        canvas.drawText(text,progressRectF.centerX()-percentTextPaint.measureText(text)/2 + (float)sin, progressRectF.centerY()+textHeight/2 - (float)cos, percentTextPaint);
+        double cos = Math.cos(Math.toRadians(percentProgress / 100.0f * 360)) * radiusArc;
+        double sin = Math.sin(Math.toRadians(percentProgress / 100.0f * 360)) * radiusArc;
+        //获取百分比文字的宽度
+        float percentTextWidth = percentTextPaint.measureText(text) / 2;
+        //画百分比文字的实心背景圆
+        progressFrontPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        canvas.drawCircle(progressRectF.centerX() + (float) sin, progressRectF.centerY() - (float) cos, percentTextWidth, progressFrontPaint);
+        //画百分比文字
+        canvas.drawText(text, progressRectF.centerX() - percentTextWidth + (float) sin, progressRectF.centerY() + textHeight / 2 - (float) cos, percentTextPaint);
     }
 
     /**

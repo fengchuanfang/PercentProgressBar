@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
                     public Void doInBackground(IPublishProgress<Integer> publishProgress, Void... voids) {
                         try {
                             for (int i = 0; i <= 100; i++) {
-                                Thread.sleep(50);
+                                Thread.sleep(100);
                                 publishProgress.showProgress(i);
                             }
                         } catch (Exception ignore) {

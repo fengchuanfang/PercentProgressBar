@@ -4,23 +4,25 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-    <com.edward.feng.percentprogressbar.view.CircleImageView
-            android:id="@+id/circle_image_view"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_gravity="center"
-            android:src="@mipmap/jianshu_logo"/>
+
     <com.edward.feng.percentprogressbar.view.PercentProgressBar1
             android:id="@+id/circle_percent_view"
-            android:layout_width="100dp"
-            android:layout_height="70dp"
+            android:layout_width="150dp"
+            android:layout_height="120dp"
             android:background="#999999"
             android:focusable="true"
             android:clickable="true"
             android:layout_gravity="center"
             app:percentTextSize="10sp"
-            app:percentTextColor="#ffff0000"
+            app:percentTextColor="#ffffff"
             app:progressFrontColor="@color/colorPrimary"
             app:progressWidth="2dp"
     />
+    <com.edward.feng.percentprogressbar.view.CircleImageView
+            android:id="@+id/circle_image_view"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:alpha="0"
+            android:layout_gravity="center"
+            android:src="@mipmap/jianshu_logo"/>
 </FrameLayout>
